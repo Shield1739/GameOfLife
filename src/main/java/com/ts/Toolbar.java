@@ -24,13 +24,13 @@ public class Toolbar extends ToolBar
 	private void handleDraw(ActionEvent actionEvent)
 	{
 		System.out.println("Draw");
-		this.mainView.setDrawMode(1);
+		this.mainView.setDrawMode(Simulation.ALIVE);
 	}
 
 	private void handleErase(ActionEvent actionEvent)
 	{
 		System.out.println("Erase");
-		this.mainView.setDrawMode(0);
+		this.mainView.setDrawMode(Simulation.DEAD);
 	}
 
 	private void handleStep(ActionEvent actionEvent)

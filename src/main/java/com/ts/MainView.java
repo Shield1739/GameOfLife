@@ -19,7 +19,7 @@ public class MainView extends VBox
 
 	private Simulation simulation;
 
-	private int drawMode = 1;
+	private int drawMode = Simulation.ALIVE;
 
 	public MainView()
 	{
@@ -43,11 +43,11 @@ public class MainView extends VBox
 	{
 		if (keyEvent.getCode() == KeyCode.D)
 		{
-			this.drawMode = 1;
+			this.drawMode = Simulation.ALIVE;
 		}
 		else if (keyEvent.getCode() == KeyCode.E)
 		{
-			this.drawMode = 0;
+			this.drawMode = Simulation.DEAD;
 		}
 	}
 
@@ -88,7 +88,7 @@ public class MainView extends VBox
 		{
 			for (int y = 0; y < this.simulation.height; y++)
 			{
-				if (this.simulation.getState(x, y) == 1)
+				if (this.simulation.getState(x, y) == Simulation.ALIVE)
 				{
 					g.fillRect(x, y, 1, 1);
 				}

@@ -6,6 +6,8 @@ import javafx.stage.Stage;
 
 /**
  * JavaFX App
+ * Game of Life Simulator
+ * v0.3
  */
 public class App extends Application
 {

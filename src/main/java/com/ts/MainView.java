@@ -6,6 +6,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Affine;
@@ -14,6 +16,9 @@ import javafx.scene.transform.NonInvertibleTransformException;
 public class MainView extends VBox
 {
 	private Canvas canvas;
+
+	private Toolbar toolbar;
+	private InfoBar infoBar;
 
 	private Affine affine;
 
@@ -26,17 +31,33 @@ public class MainView extends VBox
 		this.canvas = new Canvas(400, 400);
 		this.canvas.setOnMousePressed(this::handleDraw);
 		this.canvas.setOnMouseDragged(this::handleDraw);
+		this.canvas.setOnMouseMoved(this::handleMoved);
 
 		this.setOnKeyPressed(this::onKeyPressed);
 
-		Toolbar toolbar = new Toolbar(this);
+		this.toolbar = new Toolbar(this);
+		this.infoBar = new InfoBar();
+		this.infoBar.setDrawMode(this.drawMode);
+		this.infoBar.setCursorPosition(0, 0);
 
-		this.getChildren().addAll(toolbar, this.canvas);
+		Pane spacer = new Pane();
+		spacer.setMinSize(0, 0);
+		spacer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+		VBox.setVgrow(spacer, Priority.ALWAYS);
+
+		this.getChildren().addAll(toolbar, this.canvas, spacer, this.infoBar);
 
 		this.affine = new Affine();
 		this.affine.appendScale(400 / 10f, 400 / 10f);
 
 		this.simulation = new Simulation(10, 10);
+	}
+
+	private void handleMoved(MouseEvent mouseEvent)
+	{
+		Point2D simCoords = getSimulationCoordinates(mouseEvent);
+
+		this.infoBar.setCursorPosition((int) simCoords.getX(), (int) simCoords.getY());
 	}
 
 	private void onKeyPressed(KeyEvent keyEvent)
@@ -53,24 +74,24 @@ public class MainView extends VBox
 
 	private void handleDraw(MouseEvent mouseEvent)
 	{
+		Point2D simCoords = getSimulationCoordinates(mouseEvent);
+
+		this.simulation.setState((int) simCoords.getX(), (int) simCoords.getY(), drawMode);
+		draw();
+	}
+
+	private Point2D getSimulationCoordinates(MouseEvent mouseEvent)
+	{
 		double mouseX = mouseEvent.getX();
 		double mouseY = mouseEvent.getY();
 
 		try
 		{
-			Point2D simCoords = this.affine.inverseTransform(mouseX, mouseY);
-
-			int simX = (int) simCoords.getX();
-			int simY = (int) simCoords.getY();
-
-			System.out.println(simX + ", " + simY);
-
-			this.simulation.setState(simX, simY, drawMode);
-			draw();
+			return this.affine.inverseTransform(mouseX, mouseY);
 		}
 		catch (NonInvertibleTransformException e)
 		{
-			e.printStackTrace();
+			throw new RuntimeException("Non invertible transform");
 		}
 	}
 
@@ -117,5 +138,6 @@ public class MainView extends VBox
 	public void setDrawMode(int newDrawMode)
 	{
 		this.drawMode = newDrawMode;
+		this.infoBar.setDrawMode(newDrawMode);
 	}
 }

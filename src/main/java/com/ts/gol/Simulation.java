@@ -1,155 +1,38 @@
 package com.ts.gol;
 
+import com.ts.gol.model.Board;
+import com.ts.gol.model.CellState;
+import com.ts.gol.model.SimulationRule;
+
 public class Simulation
 {
-	public static int DEAD = 0;
-	public static int ALIVE = 1;
+	private Board simulationBoard;
+	private SimulationRule simulationRule;
 
-	int width;
-	int height;
-	int[][] board;
-
-	public Simulation(int width, int height)
+	public Simulation(Board simulationBoard, SimulationRule simulationRule)
 	{
-		this.width = width;
-		this.height = height;
-
-		this.board = new int[width][height];
-	}
-
-	public static Simulation copy(Simulation simulation)
-	{
-		Simulation copy = new Simulation(simulation.width, simulation.height);
-
-		for (int y = 0; y < simulation.height; y++)
-		{
-			for (int x = 0; x < simulation.width; x++)
-			{
-				copy.setState(x, y, simulation.getState(x, y));
-			}
-		}
-
-		return copy;
-	}
-
-	public void printBoard()
-	{
-		System.out.print("---\n");
-		for (int y = 0; y < height; y++)
-		{
-			String line = "|";
-			for (int x = 0; x < width; x++)
-			{
-				if (this.board[x][y] == DEAD)
-				{
-					line += ".";
-				}
-				else
-				{
-					line += "*";
-				}
-			}
-			line += "|";
-			System.out.println(line);
-		}
-		System.out.print("---\n");
-	}
-
-	public void setAlive(int x, int y)
-	{
-		this.setState(x, y, ALIVE);
-	}
-
-	public void setDead(int x, int y)
-	{
-		this.setState(x, y, DEAD);
-	}
-
-	public void setState(int x, int y, int state)
-	{
-		if (x < 0 || x >= width)
-		{
-			return;
-		}
-
-		if (y < 0 || y >= height)
-		{
-			return;
-		}
-
-		this.board[x][y] = state;
-	}
-
-	public int countAliveNeighbours(int x, int y)
-	{
-		int count = 0;
-
-		for (int i = -1; i < 2; i++)
-		{
-			for (int j = -1; j < 2; j++)
-			{
-				if (i == 0 && j == 0)
-				{
-					continue;
-				}
-
-				count += getState(x + i, y + j);
-			}
-		}
-
-		return count;
-	}
-
-	public int getState(int x, int y)
-	{
-		if (x < 0 || x >= width)
-		{
-			return DEAD;
-		}
-
-		if (y < 0 || y >= height)
-		{
-			return DEAD;
-		}
-
-		return this.board[x][y];
+		this.simulationBoard = simulationBoard;
+		this.simulationRule = simulationRule;
 	}
 
 	public void step()
 	{
-		int[][] newBoard = new int[width][height];
+		Board nextState = this.simulationBoard.copy();
 
-		for (int y = 0; y < height; y++)
+		for (int x = 0; x < this.simulationBoard.getWidth(); x++)
 		{
-			for (int x = 0; x < width; x++)
+			for (int y = 0; y < this.simulationBoard.getHeight(); y++)
 			{
-				int aliveNeighbours = countAliveNeighbours(x, y);
-
-				if (getState(x, y) == ALIVE)
-				{
-					if (aliveNeighbours < 2)
-					{
-						newBoard[x][y] = DEAD;
-					}
-					else if (aliveNeighbours == 2 || aliveNeighbours == 3)
-					{
-						newBoard[x][y] = ALIVE;
-					}
-					else
-					{
-						newBoard[x][y] = DEAD;
-					}
-				}
-				else
-				{
-					if (aliveNeighbours == 3)
-					{
-						newBoard[x][y] = ALIVE;
-					}
-				}
+				CellState newState = this.simulationRule.getNextState(x, y, this.simulationBoard);
+				nextState.setState(x, y, newState);
 			}
 		}
 
-		this.board = newBoard;
+		this.simulationBoard = nextState;
+	}
+
+	public Board getBoard()
+	{
+		return simulationBoard;
 	}
 }

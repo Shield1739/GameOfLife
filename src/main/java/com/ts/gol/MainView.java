@@ -1,5 +1,9 @@
 package com.ts.gol;
 
+import com.ts.gol.model.Board;
+import com.ts.gol.model.BoundedBoard;
+import com.ts.gol.model.CellState;
+import com.ts.gol.model.StandardRule;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -26,11 +30,9 @@ public class MainView extends VBox
 	private Affine affine;
 
 	private Simulation simulation;
-	private Simulation initialSimulation;
+	private Board initialBoard;
 
-	private Simulator simulator;
-
-	private int drawMode = Simulation.ALIVE;
+	private CellState drawMode = CellState.ALIVE;
 
 	private int applicationState = EDITING;
 
@@ -58,9 +60,12 @@ public class MainView extends VBox
 		this.affine = new Affine();
 		this.affine.appendScale(400 / 10f, 400 / 10f);
 
-		this.initialSimulation = new Simulation(10, 10);
-		this.simulation = Simulation.copy(initialSimulation);
+		this.initialBoard = new BoundedBoard(10, 10);
 	}
+
+	/**
+	 * Handlers
+	 */
 
 	private void handleMoved(MouseEvent mouseEvent)
 	{
@@ -73,11 +78,11 @@ public class MainView extends VBox
 	{
 		if (keyEvent.getCode() == KeyCode.D)
 		{
-			this.drawMode = Simulation.ALIVE;
+			this.drawMode = CellState.ALIVE;
 		}
 		else if (keyEvent.getCode() == KeyCode.E)
 		{
-			this.drawMode = Simulation.DEAD;
+			this.drawMode = CellState.DEAD;
 		}
 	}
 
@@ -90,9 +95,90 @@ public class MainView extends VBox
 
 		Point2D simCoords = getSimulationCoordinates(mouseEvent);
 
-		this.initialSimulation.setState((int) simCoords.getX(), (int) simCoords.getY(), drawMode);
+		this.initialBoard.setState((int) simCoords.getX(), (int) simCoords.getY(), drawMode);
 		draw();
 	}
+
+	/**
+	 * Draw Methods
+	 */
+
+	public void draw()
+	{
+		GraphicsContext g = this.canvas.getGraphicsContext2D();
+		g.setTransform(affine);
+
+		g.setFill(Color.LIGHTGRAY);
+		g.fillRect(0, 0, 400, 400);
+
+		if (this.applicationState == EDITING)
+		{
+			drawSimulation(this.initialBoard);
+		}
+		else
+		{
+			drawSimulation(this.simulation.getBoard());
+		}
+
+		g.setStroke(Color.GRAY);
+		g.setLineWidth(0.05);
+
+		for (int x = 0; x <= initialBoard.getWidth(); x++)
+		{
+			g.strokeLine(x, 0, x, 10);
+		}
+
+		for (int y = 0; y <= initialBoard.getHeight(); y++)
+		{
+			g.strokeLine(0, y, 10, y);
+		}
+	}
+
+	private void drawSimulation(Board boardToDraw)
+	{
+		GraphicsContext g = this.canvas.getGraphicsContext2D();
+		g.setFill(Color.BLACK);
+
+		for (int x = 0; x < boardToDraw.getWidth(); x++)
+		{
+			for (int y = 0; y < boardToDraw.getHeight(); y++)
+			{
+				if (boardToDraw.getState(x, y) == CellState.ALIVE)
+				{
+					g.fillRect(x, y, 1, 1);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Setters
+	 */
+
+	public void setDrawMode(CellState newDrawMode)
+	{
+		this.drawMode = newDrawMode;
+		this.infoBar.setDrawMode(newDrawMode);
+	}
+
+	public void setApplicationState(int applicationState)
+	{
+		if (this.applicationState == applicationState)
+		{
+			return;
+		}
+
+		if (applicationState == SIMULATING)
+		{
+			this.simulation = new Simulation(this.initialBoard, new StandardRule());
+		}
+
+		this.applicationState = applicationState;
+	}
+
+	/**
+	 * Getters
+	 */
 
 	private Point2D getSimulationCoordinates(MouseEvent mouseEvent)
 	{
@@ -109,83 +195,13 @@ public class MainView extends VBox
 		}
 	}
 
-	public void draw()
-	{
-		GraphicsContext g = this.canvas.getGraphicsContext2D();
-		g.setTransform(affine);
-
-		g.setFill(Color.LIGHTGRAY);
-		g.fillRect(0, 0, 400, 400);
-
-		if (this.applicationState == EDITING)
-		{
-			drawSimulation(this.initialSimulation);
-		}
-		else
-		{
-			drawSimulation(this.simulation);
-		}
-
-		g.setStroke(Color.GRAY);
-		g.setLineWidth(0.05);
-
-		for (int x = 0; x <= this.simulation.width; x++)
-		{
-			g.strokeLine(x, 0, x, 10);
-		}
-
-		for (int y = 0; y <= this.simulation.height; y++)
-		{
-			g.strokeLine(0, y, 10, y);
-		}
-	}
-
-	private void drawSimulation(Simulation simulationToDraw)
-	{
-		GraphicsContext g = this.canvas.getGraphicsContext2D();
-		g.setFill(Color.BLACK);
-
-		for (int x = 0; x < simulationToDraw.width; x++)
-		{
-			for (int y = 0; y < simulationToDraw.height; y++)
-			{
-				if (simulationToDraw.getState(x, y) == Simulation.ALIVE)
-				{
-					g.fillRect(x, y, 1, 1);
-				}
-			}
-		}
-	}
-
 	public Simulation getSimulation()
 	{
 		return simulation;
 	}
 
-	public void setDrawMode(int newDrawMode)
+	public int getApplicationState()
 	{
-		this.drawMode = newDrawMode;
-		this.infoBar.setDrawMode(newDrawMode);
-	}
-
-	public void setApplicationState(int applicationState)
-	{
-		if (this.applicationState == applicationState)
-		{
-			return;
-		}
-
-		if (applicationState == SIMULATING)
-		{
-			this.simulation = Simulation.copy(this.initialSimulation);
-			this.simulator = new Simulator(this, this.simulation);
-		}
-
-		this.applicationState = applicationState;
-	}
-
-	public Simulator getSimulator()
-	{
-		return simulator;
+		return applicationState;
 	}
 }

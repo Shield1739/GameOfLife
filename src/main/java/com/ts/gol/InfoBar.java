@@ -1,5 +1,6 @@
 package com.ts.gol;
 
+import com.ts.gol.model.CellState;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -26,10 +27,10 @@ public class InfoBar extends HBox
 		this.getChildren().addAll(this.editingTool, spacer, this.cursor);
 	}
 
-	public void setDrawMode(int drawMode)
+	public void setDrawMode(CellState drawMode)
 	{
 		String drawModeString;
-		if (drawMode == Simulation.ALIVE)
+		if (drawMode == CellState.ALIVE)
 		{
 			drawModeString = "Drawing";
 		}

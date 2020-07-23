@@ -15,6 +15,9 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MainView extends VBox
 {
+	public static final int EDITING = 0;
+	public static final int SIMULATING = 1;
+
 	private Canvas canvas;
 
 	private Toolbar toolbar;
@@ -23,8 +26,11 @@ public class MainView extends VBox
 	private Affine affine;
 
 	private Simulation simulation;
+	private Simulation initialSimulation;
 
 	private int drawMode = Simulation.ALIVE;
+
+	private int applicationState = EDITING;
 
 	public MainView()
 	{
@@ -50,7 +56,8 @@ public class MainView extends VBox
 		this.affine = new Affine();
 		this.affine.appendScale(400 / 10f, 400 / 10f);
 
-		this.simulation = new Simulation(10, 10);
+		this.initialSimulation = new Simulation(10, 10);
+		this.simulation = Simulation.copy(initialSimulation);
 	}
 
 	private void handleMoved(MouseEvent mouseEvent)
@@ -74,9 +81,14 @@ public class MainView extends VBox
 
 	private void handleDraw(MouseEvent mouseEvent)
 	{
+		if (applicationState == SIMULATING)
+		{
+			return;
+		}
+
 		Point2D simCoords = getSimulationCoordinates(mouseEvent);
 
-		this.simulation.setState((int) simCoords.getX(), (int) simCoords.getY(), drawMode);
+		this.initialSimulation.setState((int) simCoords.getX(), (int) simCoords.getY(), drawMode);
 		draw();
 	}
 
@@ -103,17 +115,13 @@ public class MainView extends VBox
 		g.setFill(Color.LIGHTGRAY);
 		g.fillRect(0, 0, 400, 400);
 
-		g.setFill(Color.BLACK);
-
-		for (int x = 0; x < this.simulation.width; x++)
+		if (this.applicationState == EDITING)
 		{
-			for (int y = 0; y < this.simulation.height; y++)
-			{
-				if (this.simulation.getState(x, y) == Simulation.ALIVE)
-				{
-					g.fillRect(x, y, 1, 1);
-				}
-			}
+			drawSimulation(this.initialSimulation);
+		}
+		else
+		{
+			drawSimulation(this.simulation);
 		}
 
 		g.setStroke(Color.GRAY);
@@ -130,6 +138,23 @@ public class MainView extends VBox
 		}
 	}
 
+	private void drawSimulation(Simulation simulationToDraw)
+	{
+		GraphicsContext g = this.canvas.getGraphicsContext2D();
+		g.setFill(Color.BLACK);
+
+		for (int x = 0; x < simulationToDraw.width; x++)
+		{
+			for (int y = 0; y < simulationToDraw.height; y++)
+			{
+				if (simulationToDraw.getState(x, y) == Simulation.ALIVE)
+				{
+					g.fillRect(x, y, 1, 1);
+				}
+			}
+		}
+	}
+
 	public Simulation getSimulation()
 	{
 		return simulation;
@@ -139,5 +164,20 @@ public class MainView extends VBox
 	{
 		this.drawMode = newDrawMode;
 		this.infoBar.setDrawMode(newDrawMode);
+	}
+
+	public void setApplicationState(int applicationState)
+	{
+		if (this.applicationState == applicationState)
+		{
+			return;
+		}
+
+		if (applicationState == SIMULATING)
+		{
+			this.simulation = Simulation.copy(this.initialSimulation);
+		}
+
+		this.applicationState = applicationState;
 	}
 }

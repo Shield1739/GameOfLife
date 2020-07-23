@@ -15,27 +15,35 @@ public class Toolbar extends ToolBar
 		draw.setOnAction(this::handleDraw);
 		Button erase = new Button("Erase");
 		erase.setOnAction(this::handleErase);
+		Button reset = new Button("Reset");
+		reset.setOnAction(this::handleReset);
+
 		Button step = new Button("Step");
 		step.setOnAction(this::handleStep);
 
-		this.getItems().addAll(draw, erase, step);
+		this.getItems().addAll(draw, erase, reset, step);
 	}
 
 	private void handleDraw(ActionEvent actionEvent)
 	{
-		System.out.println("Draw");
 		this.mainView.setDrawMode(Simulation.ALIVE);
 	}
 
 	private void handleErase(ActionEvent actionEvent)
 	{
-		System.out.println("Erase");
 		this.mainView.setDrawMode(Simulation.DEAD);
+	}
+
+	private void handleReset(ActionEvent actionEvent)
+	{
+		this.mainView.setApplicationState(MainView.EDITING);
+		this.mainView.draw();
 	}
 
 	private void handleStep(ActionEvent actionEvent)
 	{
-		System.out.println("Step");
+		this.mainView.setApplicationState(MainView.SIMULATING);
+
 		this.mainView.getSimulation().step();
 		this.mainView.draw();
 	}

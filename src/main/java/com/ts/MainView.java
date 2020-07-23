@@ -3,7 +3,6 @@ package com.ts;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -14,7 +13,6 @@ import javafx.scene.transform.NonInvertibleTransformException;
 
 public class MainView extends VBox
 {
-	private Button stepButton;
 	private Canvas canvas;
 
 	private Affine affine;
@@ -25,20 +23,15 @@ public class MainView extends VBox
 
 	public MainView()
 	{
-		stepButton = new Button("step");
-		this.stepButton.setOnAction(actionEvent ->
-			{
-				simulation.step();
-				draw();
-			}
-		);
 		this.canvas = new Canvas(400, 400);
 		this.canvas.setOnMousePressed(this::handleDraw);
 		this.canvas.setOnMouseDragged(this::handleDraw);
 
 		this.setOnKeyPressed(this::onKeyPressed);
 
-		this.getChildren().addAll(this.stepButton, this.canvas);
+		Toolbar toolbar = new Toolbar(this);
+
+		this.getChildren().addAll(toolbar, this.canvas);
 
 		this.affine = new Affine();
 		this.affine.appendScale(400 / 10f, 400 / 10f);
@@ -114,5 +107,15 @@ public class MainView extends VBox
 		{
 			g.strokeLine(0, y, 10, y);
 		}
+	}
+
+	public Simulation getSimulation()
+	{
+		return simulation;
+	}
+
+	public void setDrawMode(int newDrawMode)
+	{
+		this.drawMode = newDrawMode;
 	}
 }

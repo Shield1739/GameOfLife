@@ -1,4 +1,4 @@
-package com.ts;
+package com.ts.gol;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

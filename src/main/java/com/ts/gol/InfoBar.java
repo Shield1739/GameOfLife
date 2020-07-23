@@ -1,4 +1,4 @@
-package com.ts;
+package com.ts.gol;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;

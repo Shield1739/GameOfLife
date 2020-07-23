@@ -1,4 +1,4 @@
-package com.ts;
+package com.ts.gol;
 
 import javafx.application.Application;
 import javafx.scene.Scene;

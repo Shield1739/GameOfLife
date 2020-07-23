@@ -1,4 +1,4 @@
-package com.ts;
+package com.ts.gol;
 
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;

@@ -1,4 +1,4 @@
 module com.ts {
     requires javafx.controls;
-    exports com.ts;
+    exports com.ts.gol;
 }

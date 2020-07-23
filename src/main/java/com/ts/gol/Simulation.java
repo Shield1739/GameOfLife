@@ -1,4 +1,4 @@
-package com.ts;
+package com.ts.gol;
 
 public class Simulation
 {
